@@ -4,13 +4,13 @@ from joblib import Memory
 import os
 from openai import OpenAI
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 memory = Memory("./cache", verbose=0)
 
 
 @memory.cache
-def call_openai_api(messages: list[dict], model: str = "gpt-4o-mini") -> str:
+def call_openai_api(messages: list[dict], model: str = "gpt-4.1") -> str:
     """
     Call the OpenAI API with the provided messages and return the response.
     Args:

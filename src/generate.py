@@ -1,7 +1,11 @@
 import requests
 from src.prompt import SYSTEM_PROMPT, GENERATE_TEMPLATE
+from joblib import Memory
+
+memory = Memory("./cache", verbose=0)
 
 
+@memory.cache
 def call_api(messages: list[dict]) -> str:
     """
     Call the API with the provided messages and return the response.

@@ -1,8 +1,12 @@
 import pandas as pd
 
 from datasets import load_dataset
+from joblib import Memory
+
+memory = Memory("./cache", verbose=0)
 
 
+@memory.cache
 def get_dataset():
     submission_df = pd.read_csv("codeforces_cpp_submissions.csv")
     submission_df_filtered = submission_df[

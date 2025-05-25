@@ -25,7 +25,8 @@ def experiment():
     passed = 0
     failed = 0
     for i, row in tqdm(dataset.iterrows()):
-        response = generate_code(row["source"])
+        # response = generate_code(row["source"], mode="local")
+        response = generate_code(row["source"], mode="openai")
         extracted_code = postprocess_response(response)
         failed_test = False
         for test in row["examples"]:
@@ -46,7 +47,7 @@ def experiment():
         else:
             failed += 1
             print(f"Submission {i} failed some tests.")
-        if cnt >= 100:
+        if cnt >= 3:
             break
     print(f"Total submissions: {cnt}, Passed: {passed}, Failed: {failed}")
 

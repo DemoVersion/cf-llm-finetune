@@ -1,8 +1,30 @@
 import requests
 from src.prompt import SYSTEM_PROMPT, GENERATE_TEMPLATE
 from joblib import Memory
+import os
+from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 memory = Memory("./cache", verbose=0)
+
+
+@memory.cache
+def call_openai_api(messages: list[dict], model: str = "gpt-4o-mini") -> str:
+    """
+    Call the OpenAI API with the provided messages and return the response.
+    Args:
+        messages (list[dict]): A list of message dictionaries to send to the API.
+    Returns:
+        str: The content of the response message.
+    """
+    completion = client.chat.completions.create(
+        model=model,
+        store=True,
+        messages=messages,
+    )
+
+    return completion.choices[0].message.content
 
 
 @memory.cache
@@ -27,7 +49,7 @@ def call_api(messages: list[dict]) -> str:
     return response_json["choices"][0]["message"]["content"]
 
 
-def generate_code(source_code: str) -> str:
+def generate_code(source_code: str, mode: str = "local") -> str:
     """
     Generate code based on the provided prompt.
     Args:
@@ -45,6 +67,8 @@ def generate_code(source_code: str) -> str:
             "content": GENERATE_TEMPLATE.format(source_code=source_code),
         },
     ]
-
-    response = call_api(messages)
+    if mode == "openai":
+        response = call_openai_api(messages)
+    else:
+        response = call_api(messages)
     return response

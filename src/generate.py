@@ -14,8 +14,8 @@ def call_api(messages: list[dict]) -> str:
     url = "http://localhost:8080/v1/chat/completions"
     headers = {"Content-Type": "application/json"}
     data = {
-        "model": "your-model-name",  # Replace with your model's name
-        "messages": [messages],
+        "model": "your-model-name",
+        "messages": messages,
     }
 
     response = requests.post(url, headers=headers, json=data)

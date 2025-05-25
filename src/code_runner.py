@@ -17,10 +17,14 @@ def run_script(script, input_data=""):
     Returns:
         tuple: A tuple containing (stdout, stderr) outputs as strings.
     """
-    result = subprocess.run(
-        ["pipenv", "run", "python", "-c", script],
-        input=input_data,
-        text=True,
-        capture_output=True,
-    )
-    return result.stdout, result.stderr
+    try:
+        result = subprocess.run(
+            ["pipenv", "run", "python", "-c", script],
+            input=input_data,
+            text=True,
+            capture_output=True,
+            timeout=5,
+        )
+        return result.stdout, result.stderr
+    except subprocess.TimeoutExpired as e:
+        return "", f"TimeoutExpired: {str(e)}"

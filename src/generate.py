@@ -19,7 +19,9 @@ def call_api(messages: list[dict]) -> str:
     }
 
     response = requests.post(url, headers=headers, json=data)
-    return response.json()[0]["message"]["content"]
+    response.raise_for_status()  # Raise an error for bad responses
+    response_json = response.json()
+    return response_json["choices"][0]["message"]["content"]
 
 
 def generate_code(source_code: str) -> str:

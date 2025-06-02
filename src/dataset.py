@@ -8,18 +8,20 @@ memory = Memory("./cache", verbose=0)
 
 
 @memory.cache
-def get_submissions_df(sample_size=100000):
+def get_submissions_df(sample_size: int = 100000) -> pd.DataFrame:
     """
     Load a dataset of Codeforces submissions filtered for C++ programming language.
     Returns a DataFrame with a sample of 100,000 submissions.
     """
     ds = load_dataset("open-r1/codeforces-submissions", "default")
     results = ds["train"].filter(lambda x: "C++" in str(x["programmingLanguage"]))
-    return results.shuffle(seed=42).select(sample_size).to_pandas()
+    shuffled_results = results.shuffle(seed=42)
+    selected_results = shuffled_results.select(range(sample_size))
+    return selected_results.to_pandas()
 
 
 @memory.cache
-def get_dataset():
+def get_dataset() -> pd.DataFrame:
     """
     Load a dataset of Codeforces problems and submissions, merging them based on contest ID and problem index.
     Returns a DataFrame with a sample of 2000 merged problems and submissions.

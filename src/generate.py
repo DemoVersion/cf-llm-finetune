@@ -1,8 +1,10 @@
-import requests
-from src.prompt import SYSTEM_PROMPT, GENERATE_TEMPLATE
-from joblib import Memory
 import os
+
+import requests
+from joblib import Memory
 from openai import OpenAI
+
+from src.prompt import GENERATE_TEMPLATE, SYSTEM_PROMPT
 
 client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 

@@ -1,9 +1,11 @@
+import difflib
+
+from tqdm import tqdm
+
+from src.code_runner import run_script
 from src.dataset import get_dataset
 from src.generate import generate_code
 from src.postprocess import postprocess_response
-from src.code_runner import run_script
-import difflib
-from tqdm import tqdm
 
 
 def judge_output(stdout: str, expected: str) -> str:

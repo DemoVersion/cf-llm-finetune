@@ -4,6 +4,7 @@ import requests
 from joblib import Memory
 from openai import OpenAI
 
+from src.logger import logger
 from src.prompt import GENERATE_TEMPLATE, SYSTEM_PROMPT
 
 client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
@@ -11,6 +12,32 @@ client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 memory = Memory("./cache", verbose=0)
 
 TRANSFORMERS_PIPE = None
+
+
+def load_model():
+    """
+    Load the model for text generation.
+    This function is called only once and caches the model for subsequent calls.
+    """
+    global TRANSFORMERS_PIPE
+    if TRANSFORMERS_PIPE is None:
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+
+        logger.info("Loading model for text generation...")
+        model_id = "meta-llama/Llama-3.2-3B-Instruct"
+
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id, device_map="auto", load_in_8bit=True, torch_dtype=torch.float16
+        )
+        logger.info("Model loaded successfully.")
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        TRANSFORMERS_PIPE = pipeline(
+            "text-generation",
+            model=model,
+            tokenizer=tokenizer,
+        )
+        logger.info("Transformers pipeline created successfully.")
 
 
 @memory.cache
@@ -28,14 +55,7 @@ def generate_using_transformers(
 
     global TRANSFORMERS_PIPE
     if TRANSFORMERS_PIPE is None:
-        from transformers import pipeline
-
-        TRANSFORMERS_PIPE = pipeline(
-            "text-generation",
-            model=model,
-            load_in_8bit=True,
-            device_map="cuda:0",
-        )
+        load_model()
     result = TRANSFORMERS_PIPE(messages)
     return result["generated_text"][-1]["content"]
 

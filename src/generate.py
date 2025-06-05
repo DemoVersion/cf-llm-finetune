@@ -10,6 +10,35 @@ client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 memory = Memory("./cache", verbose=0)
 
+TRANSFORMERS_PIPE = None
+
+
+@memory.cache
+def generate_using_transformers(
+    messages: list[dict], model: str = "meta-llama/Llama-3.2-3B-Instruct"
+) -> str:
+    """
+    Generate text using the transformers pipeline.
+    Args:
+        messages (list[dict]): A list of message dictionaries to send to the model.
+        model (str): The model to use for text generation.
+    Returns:
+        str: The generated text from the model.
+    """
+
+    global TRANSFORMERS_PIPE
+    if TRANSFORMERS_PIPE is None:
+        from transformers import pipeline
+
+        TRANSFORMERS_PIPE = pipeline(
+            "text-generation",
+            model=model,
+            load_in_8bit=True,
+            device_map="cuda:0",
+        )
+    result = TRANSFORMERS_PIPE(messages)
+    return result["generated_text"][-1]["content"]
+
 
 @memory.cache
 def call_openai_api(messages: list[dict], model: str = "gpt-4.1") -> str:

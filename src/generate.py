@@ -11,28 +11,27 @@ client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 memory = Memory("./cache", verbose=0)
 
-TRANSFORMERS_PIPE = None
+TRANSFORMERS_PIPES = dict()
 
 
-def load_model():
+def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
     """
     Load the model for text generation.
     This function is called only once and caches the model for subsequent calls.
     """
-    global TRANSFORMERS_PIPE
-    if TRANSFORMERS_PIPE is None:
+    global TRANSFORMERS_PIPES
+    if model_id not in TRANSFORMERS_PIPES:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
         logger.info("Loading model for text generation...")
-        model_id = "meta-llama/Llama-3.2-3B-Instruct"
 
         model = AutoModelForCausalLM.from_pretrained(
             model_id, device_map="auto", load_in_8bit=True, torch_dtype=torch.float16
         )
         logger.info("Model loaded successfully.")
         tokenizer = AutoTokenizer.from_pretrained(model_id)
-        TRANSFORMERS_PIPE = pipeline(
+        TRANSFORMERS_PIPES[model_id] = pipeline(
             "text-generation",
             model=model,
             tokenizer=tokenizer,
@@ -42,22 +41,22 @@ def load_model():
 
 @memory.cache
 def generate_using_transformers(
-    messages: list[dict], model: str = "meta-llama/Llama-3.2-3B-Instruct"
+    messages: list[dict], model_id: str = "meta-llama/Llama-3.2-3B-Instruct"
 ) -> str:
     """
     Generate text using the transformers pipeline.
     Args:
         messages (list[dict]): A list of message dictionaries to send to the model.
-        model (str): The model to use for text generation.
+        model_id (str): The model to use for text generation.
     Returns:
         str: The generated text from the model.
     """
-
-    global TRANSFORMERS_PIPE
-    if TRANSFORMERS_PIPE is None:
-        load_model()
-    result = TRANSFORMERS_PIPE(messages)
-    return result["generated_text"][-1]["content"]
+    global TRANSFORMERS_PIPES
+    if model_id not in TRANSFORMERS_PIPES:
+        load_model(model_id)
+    transformers_pipe = TRANSFORMERS_PIPES[model_id]
+    result = transformers_pipe(messages)
+    return result[0]["generated_text"][-1]["content"]
 
 
 @memory.cache

@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+pandas = "*"
+datasets = "*"
+huggingface-hub = "*"
+joblib = "*"
+openai = "*"
+peft = "*"
+scikit-learn = "*"
+
+[dev-packages]
+ipykernel = "*"
+isort = "*"
+black = "*"
+autoflake = "*"
+
+[requires]
+python_version = "3.10"
+
+[scripts]
+apply_autoflake = "pipenv run bash -c 'autoflake --in-place --remove-all-unused-imports --recursive .'"
+apply_black = "black ."
+apply_isort = "isort --profile black ."
+clean_code = "sh -c 'pipenv run apply_autoflake && pipenv run apply_isort && pipenv run apply_black'"

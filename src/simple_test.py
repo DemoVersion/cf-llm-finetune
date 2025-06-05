@@ -1,5 +1,7 @@
 import difflib
+import os
 
+import pandas as pd
 from tqdm import tqdm
 
 from src.code_runner import run_script
@@ -20,8 +22,18 @@ def judge_output(stdout: str, expected: str) -> str:
         return "Wrong Answer", diffs
 
 
-def experiment():
+def load_dataset():
+    if "dataset.pkl" in os.listdir("."):
+        print("Loading dataset from pickle file...")
+        dataset = pd.read_pickle("dataset.pkl")
+        return dataset
     dataset = load_and_merge_problems_submissions()
+    dataset.to_pickle("dataset.pkl")
+    return dataset
+
+
+def experiment():
+    dataset = load_dataset()
     print(f"Dataset size: {len(dataset)}")
     cnt = 0
     passed = 0

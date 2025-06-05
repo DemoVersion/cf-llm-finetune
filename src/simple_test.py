@@ -23,9 +23,11 @@ def judge_output(stdout: str, expected: str) -> str:
 
 
 def load_dataset():
-    if "dataset.pkl" in os.listdir("."):
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    pickle_path = os.path.join(dir_path, "dataset.pkl")
+    if os.path.exists(pickle_path):
         print("Loading dataset from pickle file...")
-        dataset = pd.read_pickle("dataset.pkl")
+        dataset = pd.read_pickle(pickle_path)
         return dataset
     dataset = load_and_merge_problems_submissions()
     dataset.to_pickle("dataset.pkl")

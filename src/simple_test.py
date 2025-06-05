@@ -3,7 +3,7 @@ import difflib
 from tqdm import tqdm
 
 from src.code_runner import run_script
-from src.dataset import get_dataset
+from src.dataset import load_and_merge_problems_submissions
 from src.generate import generate_code
 from src.postprocess import postprocess_response
 
@@ -21,7 +21,7 @@ def judge_output(stdout: str, expected: str) -> str:
 
 
 def experiment():
-    dataset = get_dataset()
+    dataset = load_and_merge_problems_submissions()
     print(f"Dataset size: {len(dataset)}")
     cnt = 0
     passed = 0
@@ -30,6 +30,7 @@ def experiment():
         # response = generate_code(row["source"], mode="local")
         response = generate_code(row["source"], mode="openai")
         extracted_code = postprocess_response(response)
+        print(f"Submission {i}:\n{extracted_code}\n")
         failed_test = False
         for test in row["examples"]:
             print(f"Running test: {test['input']}")
@@ -49,7 +50,7 @@ def experiment():
         else:
             failed += 1
             print(f"Submission {i} failed some tests.")
-        if cnt >= 3:
+        if cnt >= 10:
             break
     print(f"Total submissions: {cnt}, Passed: {passed}, Failed: {failed}")
 

@@ -27,7 +27,7 @@ def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
         logger.info("Loading model for text generation...")
 
         model = AutoModelForCausalLM.from_pretrained(
-            model_id, device_map="auto", load_in_8bit=True, torch_dtype=torch.float16
+            model_id, device_map="auto", load_in_4bit=True, torch_dtype=torch.float16
         )
         logger.info("Model loaded successfully.")
         tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -55,7 +55,12 @@ def generate_using_transformers(
     if model_id not in TRANSFORMERS_PIPES:
         load_model(model_id)
     transformers_pipe = TRANSFORMERS_PIPES[model_id]
-    result = transformers_pipe(messages)
+    result = transformers_pipe(
+        messages,
+        max_new_tokens=10000,
+        do_sample=True,
+        temperature=0.6,
+    )
     return result[0]["generated_text"][-1]["content"]
 
 
@@ -119,6 +124,8 @@ def generate_code(source_code: str, mode: str = "local") -> str:
     ]
     if mode == "openai":
         response = call_openai_api(messages)
+    elif mode == "transformers":
+        response = generate_using_transformers(messages)
     else:
         response = call_api(messages)
     return response

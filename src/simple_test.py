@@ -28,7 +28,8 @@ def experiment():
     failed = 0
     for i, row in tqdm(dataset.iterrows()):
         # response = generate_code(row["source"], mode="local")
-        response = generate_code(row["source"], mode="openai")
+        # response = generate_code(row["source"], mode="openai")
+        response = generate_code(row["source"], mode="transformers")
         extracted_code = postprocess_response(response)
         print(f"Submission {i}:\n{extracted_code}\n")
         failed_test = False

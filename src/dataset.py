@@ -1,3 +1,4 @@
+import os
 import re
 
 import pandas as pd
@@ -9,6 +10,32 @@ from tqdm import tqdm
 from src.logger import logger
 
 memory = Memory("./cache", verbose=0)
+
+
+def load_dataset():
+    """
+    Load the dataset from a pickle file if it exists, otherwise load and merge problems and submissions.
+    Returns a DataFrame containing the dataset.
+    """
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    pickle_path = os.path.join(dir_path, "dataset.pkl")
+    if os.path.exists(pickle_path):
+        print("Loading dataset from pickle file...")
+        dataset = pd.read_pickle(pickle_path)
+        return dataset
+    dataset = load_and_merge_problems_submissions()
+    dataset.to_pickle("dataset.pkl")
+    return dataset
+
+
+def load_dataset_split():
+    """
+    Load the dataset and split it into train, validation, and test sets.
+    Returns a tuple of DataFrames: (train_df, val_df, test_df).
+    """
+    dataset = load_dataset()
+    train_df, val_df, test_df = split_dataset(dataset)
+    return train_df, val_df, test_df
 
 
 def get_limited_submissions_per_problem(

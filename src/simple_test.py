@@ -1,13 +1,11 @@
 import difflib
-import os
 
-import pandas as pd
 from tqdm import tqdm
 
 from src.code_runner import run_script
-from src.dataset import load_and_merge_problems_submissions
 from src.generate import generate_code
 from src.postprocess import postprocess_response
+from src.dataset import load_dataset
 
 
 def judge_output(stdout: str, expected: str) -> str:
@@ -20,18 +18,6 @@ def judge_output(stdout: str, expected: str) -> str:
         diff = difflib.unified_diff(expected_lines, stdout_lines, lineterm="")
         diffs = "\n".join(diff)
         return "Wrong Answer", diffs
-
-
-def load_dataset():
-    dir_path = os.path.dirname(os.path.abspath(__file__))
-    pickle_path = os.path.join(dir_path, "dataset.pkl")
-    if os.path.exists(pickle_path):
-        print("Loading dataset from pickle file...")
-        dataset = pd.read_pickle(pickle_path)
-        return dataset
-    dataset = load_and_merge_problems_submissions()
-    dataset.to_pickle("dataset.pkl")
-    return dataset
 
 
 def experiment():

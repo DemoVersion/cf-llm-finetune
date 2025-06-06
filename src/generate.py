@@ -119,13 +119,13 @@ def call_api(messages: list[dict]) -> str:
     return response_json["choices"][0]["message"]["content"]
 
 
-def generate_code(source_code: str, mode: str = "local") -> str:
+def generate_messages(source_code: str) -> list[dict]:
     """
-    Generate code based on the provided prompt.
+    Generate a list of messages for the model based on the source code.
     Args:
-        prompt (str): The prompt to generate code for.
+        source_code (str): The source code to generate messages for.
     Returns:
-        str: The generated code.
+        list[dict]: A list of message dictionaries.
     """
     messages = [
         {
@@ -137,6 +137,18 @@ def generate_code(source_code: str, mode: str = "local") -> str:
             "content": GENERATE_TEMPLATE.format(source_code=source_code),
         },
     ]
+    return messages
+
+
+def generate_code(source_code: str, mode: str = "local") -> str:
+    """
+    Generate code based on the provided prompt.
+    Args:
+        source_code (str): The source code to generate messages for.
+    Returns:
+        str: The generated code.
+    """
+    messages = generate_messages(source_code)
     if mode == "openai":
         response = call_openai_api(messages)
     elif mode == "transformers":

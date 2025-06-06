@@ -39,6 +39,21 @@ def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
         logger.info("Transformers pipeline created successfully.")
 
 
+def get_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
+    """
+    Get the model for text generation.
+    This function is called only once and caches the model for subsequent calls.
+    Args:
+        model_id (str): The model to use for text generation.
+    Returns:
+        transformers.pipeline: The transformers pipeline for text generation.
+    """
+    global TRANSFORMERS_PIPES
+    if model_id not in TRANSFORMERS_PIPES:
+        load_model(model_id)
+    return TRANSFORMERS_PIPES[model_id]
+
+
 @memory.cache
 def generate_using_transformers(
     messages: list[dict], model_id: str = "meta-llama/Llama-3.2-3B-Instruct"

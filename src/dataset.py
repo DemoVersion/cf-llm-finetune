@@ -12,7 +12,7 @@ from src.logger import logger
 memory = Memory("./cache", verbose=0)
 
 
-def load_dataset():
+def load_experiment_dataset():
     """
     Load the dataset from a pickle file if it exists, otherwise load and merge problems and submissions.
     Returns a DataFrame containing the dataset.
@@ -33,7 +33,7 @@ def load_dataset_split():
     Load the dataset and split it into train, validation, and test sets.
     Returns a tuple of DataFrames: (train_df, val_df, test_df).
     """
-    dataset = load_dataset()
+    dataset = load_experiment_dataset()
     train_df, val_df, test_df = split_dataset(dataset)
     return train_df, val_df, test_df
 

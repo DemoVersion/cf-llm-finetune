@@ -3,7 +3,7 @@ import difflib
 from tqdm import tqdm
 
 from src.code_runner import run_script
-from src.dataset import load_dataset
+from src.dataset import load_experiment_dataset
 from src.generate import generate_code
 from src.postprocess import postprocess_response
 
@@ -21,7 +21,7 @@ def judge_output(stdout: str, expected: str) -> str:
 
 
 def experiment():
-    dataset = load_dataset()
+    dataset = load_experiment_dataset()
     print(f"Dataset size: {len(dataset)}")
     cnt = 0
     passed = 0

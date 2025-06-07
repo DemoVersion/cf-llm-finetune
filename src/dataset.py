@@ -18,13 +18,13 @@ def load_dataset():
     Returns a DataFrame containing the dataset.
     """
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    pickle_path = os.path.join(dir_path, "dataset.pkl")
-    if os.path.exists(pickle_path):
-        print("Loading dataset from pickle file...")
-        dataset = pd.read_pickle(pickle_path)
+    jsonl_file = os.path.join(dir_path, "dataset.jsonl")
+    if os.path.exists(jsonl_file):
+        print("Loading dataset from jsonl file...")
+        dataset = pd.read_json(jsonl_file, orient="records", lines=True)
         return dataset
     dataset = load_and_merge_problems_submissions()
-    dataset.to_pickle("dataset.pkl")
+    dataset.to_json("dataset.jsonl", orient="records", lines=True)
     return dataset
 
 

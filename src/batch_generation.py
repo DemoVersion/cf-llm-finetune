@@ -1,4 +1,5 @@
 import pandas as pd
+
 from src.generate import generate_messages
 
 

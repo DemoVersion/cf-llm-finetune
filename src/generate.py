@@ -1,17 +1,14 @@
-import os
-
 import requests
 from joblib import Memory
-from openai import OpenAI
 
 from src.logger import logger
 from src.prompt import GENERATE_TEMPLATE, SYSTEM_PROMPT
 
-client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
 memory = Memory("./cache", verbose=0)
 
 TRANSFORMERS_PIPES = dict()
+OPENAI_CLIENT = None
 
 
 def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
@@ -22,15 +19,30 @@ def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
     global TRANSFORMERS_PIPES
     if model_id not in TRANSFORMERS_PIPES:
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+        from transformers import (
+            AutoModelForCausalLM,
+            AutoTokenizer,
+            BitsAndBytesConfig,
+            pipeline,
+        )
 
         logger.info("Loading model for text generation...")
-
+        qconfig = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16,  # ← compute in float16
+            bnb_4bit_use_double_quant=True,  # optional
+            bnb_4bit_quant_type="nf4",  # or "fp4"
+        )
         model = AutoModelForCausalLM.from_pretrained(
-            model_id, device_map="auto", load_in_4bit=True, torch_dtype=torch.float16
+            model_id,
+            device_map="auto",
+            quantization_config=qconfig,
+            torch_dtype=torch.float16,
         )
         logger.info("Model loaded successfully.")
-        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id, use_fast=True, padding_side="left"
+        )
         TRANSFORMERS_PIPES[model_id] = pipeline(
             "text-generation",
             model=model,
@@ -88,7 +100,13 @@ def call_openai_api(messages: list[dict], model: str = "gpt-4.1") -> str:
     Returns:
         str: The content of the response message.
     """
-    completion = client.chat.completions.create(
+    global OPENAI_CLIENT
+    if OPENAI_CLIENT is None:
+        from openai import OpenAI
+        import os
+
+        OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+    completion = OPENAI_CLIENT.chat.completions.create(
         model=model,
         store=True,
         messages=messages,

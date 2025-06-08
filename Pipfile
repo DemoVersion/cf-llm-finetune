@@ -4,13 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+torch = "2.7.1"
+transformers = "4.52.*"
+peft = "0.6.*"
 requests = "*"
 pandas = "*"
 datasets = "*"
 huggingface-hub = "*"
 joblib = "*"
 openai = "*"
-peft = "*"
 scikit-learn = "*"
 
 [dev-packages]
@@ -20,7 +22,7 @@ black = "*"
 autoflake = "*"
 
 [requires]
-python_version = "3.10"
+python_version = "3.11"
 
 [scripts]
 apply_autoflake = "pipenv run bash -c 'autoflake --in-place --remove-all-unused-imports --recursive .'"

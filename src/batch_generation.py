@@ -170,7 +170,7 @@ def batch_process(all_messages, model, batch_size=5, **kwargs):
     load_cache()
     results = []
 
-    for i in range(0, len(all_messages), batch_size):
+    for i in tqdm(range(0, len(all_messages), batch_size)):
         chunk = all_messages[i : i + batch_size]
         outputs = process_chunk(chunk, model.model, model.tokenizer, **kwargs)
 
@@ -191,7 +191,7 @@ def generate_messages_dataset(dataset: pd.DataFrame) -> list[list[dict]]:
         list[list[dict]]: A list of lists of messages for each row in the dataset.
     """
     messages_list = []
-    for _, row in tqdm(dataset.iterrows()):
+    for _, row in dataset.iterrows():
         messages = generate_messages(row["source"])
         messages_list.append(messages)
     return messages_list

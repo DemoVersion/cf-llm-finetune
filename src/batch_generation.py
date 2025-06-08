@@ -1,6 +1,181 @@
+import os
+import pickle
+from datetime import datetime
+
 import pandas as pd
+import torch
 
 from src.generate import generate_messages
+
+cache = {}
+CACHE_FILE = "conversation_cache.pkl"
+
+
+def generate_from_token_ids(
+    model, tokenizer, tokenized_inputs, max_new_tokens, temperature
+):
+    with torch.no_grad():
+        return model.generate(
+            **tokenized_inputs,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            eos_token_id=tokenizer.eos_token_id,
+        )
+
+
+def decode_token_ids_to_messages(tokenizer, generated_ids, tokenized_inputs):
+    # get only the generated IDs after the input
+    input_length = tokenized_inputs["input_ids"].shape[1]
+    generated_ids = generated_ids[:, input_length:]
+    all_outputs = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
+    outputs = []
+    for i, text in enumerate(all_outputs):
+        outputs.append(text.strip())
+    return outputs
+
+
+def process_all_conversations(
+    model, tokenizer, conversations, max_new_tokens=4096, temperature=0.6
+):
+    # Each conversation is a list of messages
+    input_texts = [
+        tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=False
+        )
+        for messages in conversations
+    ]
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    tokenized_inputs_org = tokenizer(
+        input_texts, padding="longest", return_tensors="pt"
+    )
+    tokenized_inputs = {k: v.to(model.device) for k, v in tokenized_inputs_org.items()}
+
+    generated_ids = generate_from_token_ids(
+        model,
+        tokenizer,
+        tokenized_inputs,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+    )
+    return (
+        decode_token_ids_to_messages(tokenizer, generated_ids, tokenized_inputs_org),
+        tokenized_inputs_org,
+        generated_ids,
+    )
+
+
+def load_cache():
+    """
+    Load the cache dictionary from disk into the global `cache` variable.
+    """
+    global cache
+    if len(cache) == 0 and os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, "rb") as f:
+            cache = pickle.load(f)
+
+
+def save_cache():
+    """
+    Persist the global `cache` dictionary to disk.
+    """
+    with open(CACHE_FILE, "wb") as f:
+        pickle.dump(cache, f)
+
+
+def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6):
+    """
+    Process a list of messages (chunk). Uses per-message caching:
+    - Checks each message against the cache.
+    - If any are uncached, calls process_all_conversations once on the list of uncached messages.
+    - Caches results for each message.
+    - Returns a list of (outputs, tokenized_input, generated_ids) tuples in chunk order.
+
+    Args:
+        chunk (list): A list of message dicts.
+        model: The chat model.
+        tokenizer: The tokenizer associated with the model.
+        max_new_tokens (int): Maximum number of tokens to generate.
+        temperature (float): Sampling temperature.
+
+    Returns:
+        list: List of tuples for each message in chunk.
+    """
+    load_cache()
+
+    # Identify which messages need processing
+    uncached = []
+    for msg in chunk:
+        key = repr(msg)
+        if key not in cache:
+            uncached.append(msg)
+
+    # Process uncached messages in one batch call
+    if uncached:
+        print(f"[{datetime.now()}] Processing {len(uncached)} new messages in chunk.")
+        outputs_new, tokenized_input_new, generated_ids_new = process_all_conversations(
+            model,
+            tokenizer,
+            uncached,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+        )
+        print("Size of tokenized input:", tokenized_input_new["input_ids"].shape[1])
+        print("Size of generated IDs:", generated_ids_new.shape[1])
+        for i, msg in enumerate(uncached):
+            key = repr(msg)
+            cache[key] = (
+                outputs_new[i],
+                (
+                    tokenized_input_new[i]
+                    if isinstance(tokenized_input_new, list)
+                    else tokenized_input_new
+                ),
+                (
+                    generated_ids_new[i]
+                    if isinstance(generated_ids_new, list)
+                    else generated_ids_new
+                ),
+            )
+        save_cache()
+    else:
+        print(
+            f"[{datetime.now()}] All messages in chunk are cached. Skipping processing."
+        )
+
+    # Retrieve results in original chunk order
+    results = []
+    for msg in chunk:
+        key = repr(msg)
+        results.append(cache[key])
+
+    return results
+
+
+def batch_process(all_messages, model, batch_size=5, **kwargs):
+    """
+    Iterate through all_messages in batches of `batch_size`, using caching to skip
+    previously processed chunks.
+
+    Args:
+        all_messages (list): Full list of message dicts.
+        model: The chat model.
+        tokenizer: The tokenizer.
+        batch_size (int): Number of messages per chunk.
+        **kwargs: Passed to process_chunk.
+
+    Returns:
+        list: A list of results for each processed chunk.
+    """
+    load_cache()
+    results = []
+
+    for i in range(0, len(all_messages), batch_size):
+        chunk = all_messages[i : i + batch_size]
+        outputs = process_chunk(chunk, model.model, model.tokenizer, **kwargs)
+
+        results.append(outputs)
+
+    return results
 
 
 def generate_messages_dataset(dataset: pd.DataFrame) -> list[list[dict]]:

@@ -1,94 +1,11 @@
 import requests
 from joblib import Memory
 
-from src.logger import logger
 from src.prompt import GENERATE_TEMPLATE, SYSTEM_PROMPT
-
 
 memory = Memory("./cache", verbose=0)
 
-TRANSFORMERS_PIPES = dict()
 OPENAI_CLIENT = None
-
-
-def load_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
-    """
-    Load the model for text generation.
-    This function is called only once and caches the model for subsequent calls.
-    """
-    global TRANSFORMERS_PIPES
-    if model_id not in TRANSFORMERS_PIPES:
-        import torch
-        from transformers import (
-            AutoModelForCausalLM,
-            AutoTokenizer,
-            BitsAndBytesConfig,
-            pipeline,
-        )
-
-        logger.info("Loading model for text generation...")
-        qconfig = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float16,  # ← compute in float16
-            bnb_4bit_use_double_quant=True,  # optional
-            bnb_4bit_quant_type="nf4",  # or "fp4"
-        )
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            device_map="auto",
-            quantization_config=qconfig,
-            torch_dtype=torch.float16,
-        )
-        logger.info("Model loaded successfully.")
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_id, use_fast=True, padding_side="left"
-        )
-        TRANSFORMERS_PIPES[model_id] = pipeline(
-            "text-generation",
-            model=model,
-            tokenizer=tokenizer,
-        )
-        logger.info("Transformers pipeline created successfully.")
-
-
-def get_model(model_id: str = "meta-llama/Llama-3.2-3B-Instruct"):
-    """
-    Get the model for text generation.
-    This function is called only once and caches the model for subsequent calls.
-    Args:
-        model_id (str): The model to use for text generation.
-    Returns:
-        transformers.pipeline: The transformers pipeline for text generation.
-    """
-    global TRANSFORMERS_PIPES
-    if model_id not in TRANSFORMERS_PIPES:
-        load_model(model_id)
-    return TRANSFORMERS_PIPES[model_id]
-
-
-@memory.cache
-def generate_using_transformers(
-    messages: list[dict], model_id: str = "meta-llama/Llama-3.2-3B-Instruct"
-) -> str:
-    """
-    Generate text using the transformers pipeline.
-    Args:
-        messages (list[dict]): A list of message dictionaries to send to the model.
-        model_id (str): The model to use for text generation.
-    Returns:
-        str: The generated text from the model.
-    """
-    global TRANSFORMERS_PIPES
-    if model_id not in TRANSFORMERS_PIPES:
-        load_model(model_id)
-    transformers_pipe = TRANSFORMERS_PIPES[model_id]
-    result = transformers_pipe(
-        messages,
-        max_new_tokens=10000,
-        do_sample=True,
-        temperature=0.6,
-    )
-    return result[0]["generated_text"][-1]["content"]
 
 
 @memory.cache
@@ -102,8 +19,9 @@ def call_openai_api(messages: list[dict], model: str = "gpt-4.1") -> str:
     """
     global OPENAI_CLIENT
     if OPENAI_CLIENT is None:
-        from openai import OpenAI
         import os
+
+        from openai import OpenAI
 
         OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_KEY"))
     completion = OPENAI_CLIENT.chat.completions.create(

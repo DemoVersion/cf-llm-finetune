@@ -4,6 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 import torch
+from tqdm import tqdm
 
 from src.generate import generate_messages
 
@@ -190,7 +191,7 @@ def generate_messages_dataset(dataset: pd.DataFrame) -> list[list[dict]]:
         list[list[dict]]: A list of lists of messages for each row in the dataset.
     """
     messages_list = []
-    for _, row in dataset.iterrows():
+    for _, row in tqdm(dataset.iterrows()):
         messages = generate_messages(row["source"])
         messages_list.append(messages)
     return messages_list

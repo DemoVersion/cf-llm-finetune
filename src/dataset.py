@@ -108,7 +108,10 @@ def load_and_merge_problems_submissions() -> pd.DataFrame:
     # Filter out macro-heavy source code
     filtered_submissions = raw_submissions_df[
         ~raw_submissions_df["source"].str.contains(
-            r"^\s*#\s*(?:define|ifdef)\b", flags=re.IGNORECASE, regex=True
+            r"^\s*#\s*(?:define|ifdef|ifndef)\b",
+            flags=re.IGNORECASE | re.MULTILINE,
+            na=False,
+            regex=True,
         )
     ].copy()
 

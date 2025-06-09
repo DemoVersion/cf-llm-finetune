@@ -24,7 +24,7 @@ def load_experiment_dataset():
         dataset = pd.read_json(jsonl_file, orient="records", lines=True)
         return dataset
     dataset = load_and_merge_problems_submissions()
-    dataset.to_json("dataset.jsonl", orient="records", lines=True)
+    dataset.to_json(jsonl_file, orient="records", lines=True)
     return dataset
 
 
@@ -108,7 +108,7 @@ def load_and_merge_problems_submissions() -> pd.DataFrame:
     # Filter out macro-heavy source code
     filtered_submissions = raw_submissions_df[
         ~raw_submissions_df["source"].str.contains(
-            r"^\s*#\s*(?:define|ifdef|ifndef)\b",
+            r"#\s*(?:define|ifdef|ifndef)\b",
             flags=re.IGNORECASE | re.MULTILINE,
             na=False,
             regex=True,

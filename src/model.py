@@ -32,8 +32,6 @@ class ModelConfig:
         self.quant_type = quant_type
 
         self.compile_kwargs = compile_kwargs or {
-            "backend": "aot_eager",
-            "mode": "reduce-overhead",
             "fullgraph": False,
         }
 

@@ -1,0 +1,3 @@
+[tool.uv.pip]
+torch-backend = "cu118"
+no-build-isolation = true

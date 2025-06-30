@@ -24,13 +24,13 @@ Synthetic Python translations are produced via GPT-4.1, then used to fine-tune a
 ## Model Fine-Tuning
 
 - **Base model:** LLaMA 3.2 3B  
-- **Framework:** `uv`  
-- **Objective:** Minimize translation errors and ensure runtime correctness on sample tests  
+- **Framework:** `axolotl`, `transformers`, `deepspeed`, `flash-attn`  
+- **Objective:** Minimize translation errors, and reduce costs on sample tests based on Teacher Student Learning (TSL) principle 
 - **Verification:** Automated test harness that compiles/runs the Python output against provided samples
 
 ## Installation
 
-1. **Install `uv`** (if not already installed):  
+1. Install `uv` (if not already installed):  
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env

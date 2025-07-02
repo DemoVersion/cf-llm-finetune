@@ -17,7 +17,7 @@ OPENAI_CLIENT = None
 
 def call_openai_batch(
     messages_list: List[List[Dict]],
-    model: str = "gpt-4o-mini",
+    model: str = "gpt-4.1",
     completion_window: str = "24h",
 ) -> str:
     """

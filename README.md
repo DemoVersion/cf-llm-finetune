@@ -53,7 +53,7 @@ uv pip install packaging setuptools wheel
 4. Sync Development Dependencies
 
 ```bash
-uv sync --dev
+uv sync --extra dev --extra gpu
 ```
 
 5. (Optional) Enable Flash Attention

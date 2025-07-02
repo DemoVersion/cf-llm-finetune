@@ -13,25 +13,27 @@ dependencies = [
   "packaging",
   "setuptools",
   "wheel",
-  "torch==2.6.0",
-  "transformers",
   "requests",
   "pandas",
-  "datasets",
-  "huggingface-hub",
   "joblib",
   "openai",
   "scikit-learn",
   "pydantic",
-  "axolotl[deepspeed]"
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
   "ipykernel",
   "isort",
   "black",
   "autoflake"
+]
+gpu = [
+  "axolotl[deepspeed]",
+  "huggingface-hub",
+  "torch==2.6.0",
+  "transformers",
+  "datasets",
 ]
 
 [project.urls]

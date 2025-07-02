@@ -1,4 +1,5 @@
 import click
+import openai
 import pandas as pd
 from tqdm import tqdm
 
@@ -31,7 +32,11 @@ def main(dataset_name):
     for _, row in tqdm(
         df.iterrows(), total=len(df), desc=f"Processing {dataset_name} split"
     ):
-        response = generate_code(row["source"], mode="openai")
+        try:
+            response = generate_code(row["source"], mode="openai")
+        except openai.RateLimitError:
+            click.echo("Rate limit exceeded. Please try again later.")
+            break
         responses.append(
             {
                 "source": row["source"],

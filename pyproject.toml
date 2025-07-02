@@ -19,6 +19,7 @@ dependencies = [
   "openai",
   "scikit-learn",
   "pydantic",
+  "datasets",
 ]
 
 [project.optional-dependencies]
@@ -33,7 +34,6 @@ gpu = [
   "huggingface-hub",
   "torch==2.6.0",
   "transformers",
-  "datasets",
 ]
 
 [project.urls]

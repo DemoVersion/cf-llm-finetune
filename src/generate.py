@@ -70,7 +70,7 @@ def get_openai_batch_result(job_id: str, poll_interval: int = 30) -> List[Dict]:
         OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
     while True:
-        job = OPENAI_CLIENT.batches.retrieve(id=job_id)
+        job = OPENAI_CLIENT.batches.retrieve(batch_id=job_id)
         status = job.status
         if status in ("succeeded", "failed"):
             break

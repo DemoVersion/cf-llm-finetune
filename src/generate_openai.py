@@ -24,7 +24,7 @@ from src.generate import (
 @click.option(
     "--mode",
     type=click.Choice(["fast", "cheap"], case_sensitive=False),
-    default="val",
+    default="fast",
     help="Mode for generating responses: 'fast' for quick generation it will try calling directly and then switch to batch mode when rate limit exceeded, 'cheap' for cost-effective generation using batch processing.",
 )
 @click.option(

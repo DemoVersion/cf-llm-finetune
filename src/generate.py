@@ -2,7 +2,7 @@ import json
 import os
 import time
 from tempfile import NamedTemporaryFile
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import requests
 from joblib import Memory
@@ -56,7 +56,9 @@ def call_openai_batch(
     return batch_job.id
 
 
-def get_openai_batch_result(job_id: str, poll_interval: int = 30) -> List[Dict]:
+def get_openai_batch_result(
+    job_id: str, poll_interval: int = 30
+) -> Union[List[Dict], List[Dict]]:
     """
     Poll a batch job until completion, then download and parse its results.
     Args:
@@ -72,19 +74,22 @@ def get_openai_batch_result(job_id: str, poll_interval: int = 30) -> List[Dict]:
     while True:
         job = OPENAI_CLIENT.batches.retrieve(batch_id=job_id)
         status = job.status
-        if status in ("succeeded", "failed"):
+        if status in ("completed", "failed"):
             break
         time.sleep(poll_interval)
 
-    if status != "succeeded":
+    if status != "completed":
         raise RuntimeError(f"Batch job {job_id} ended with status {status}")
 
-    output_id = job.output_file_id
-    raw = OPENAI_CLIENT.files.content(output_id)
+    raw = OPENAI_CLIENT.files.content(job.output_file_id)
     lines = raw.content.decode("utf-8").splitlines()
     results = [json.loads(line) for line in lines]
 
-    return results
+    raw = OPENAI_CLIENT.files.content(job.input_file_id)
+    lines = raw.content.decode("utf-8").splitlines()
+    input_file_rows = [json.loads(line) for line in lines]
+
+    return results, input_file_rows
 
 
 @memory.cache

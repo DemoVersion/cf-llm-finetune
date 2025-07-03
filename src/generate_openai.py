@@ -52,7 +52,7 @@ def create_messages_key_to_result_map(
 )
 @click.option(
     "--batch-job-id",
-    type=Optional[str],
+    type=str,
     default=None,
     help="If provided, will use this batch job ID to fetch results instead of generating new responses. Only use this if you have already run a batch job and want to retrieve its results.",
 )

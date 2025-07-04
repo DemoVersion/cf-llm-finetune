@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=64", "wheel", "setuptools_scm>=8", "packaging==23.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cf-llm-finetune"
+version = "0.1.0"
+description = "Codeforces LLM Finetune"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+  "packaging",
+  "setuptools",
+  "wheel",
+  "requests",
+  "pandas",
+  "joblib",
+  "openai",
+  "scikit-learn",
+  "pydantic",
+  "datasets",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ipykernel",
+  "isort",
+  "black",
+  "autoflake"
+]
+gpu = [
+  "axolotl[deepspeed]",
+  "huggingface-hub",
+  "torch==2.6.0",
+  "transformers",
+]
+
+[project.urls]
+Homepage = "https://github.com/DemoVersion/cf-llm-finetune/"
+Repository = "https://github.com/DemoVersion/cf-llm-finetune/"
+
+[tool.uv]
+no-build-isolation = true
+

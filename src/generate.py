@@ -1,11 +1,95 @@
+import json
+import os
+import time
+from tempfile import NamedTemporaryFile
+from typing import Dict, List, Union
+
 import requests
 from joblib import Memory
+from openai import OpenAI
 
 from src.prompt import GENERATE_TEMPLATE, SYSTEM_PROMPT
 
 memory = Memory("./cache", verbose=0)
 
 OPENAI_CLIENT = None
+
+
+def call_openai_batch(
+    messages_list: List[List[Dict]],
+    model: str = "gpt-4.1",
+    completion_window: str = "24h",
+) -> str:
+    """
+    Create a Batch API job from multiple chat messages.
+    Args:
+        messages_list: A list of message sequences, each itself a list of dicts with 'role' and 'content'.
+        model: The model to use for all batch requests.
+        completion_window: How long the batch job may run (only "24h" is currently supported).
+    Returns:
+        The batch job ID as a string.
+    """
+    global OPENAI_CLIENT
+    if OPENAI_CLIENT is None:
+        OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+
+    with NamedTemporaryFile(mode="w+", suffix=".jsonl", delete=False) as tmp:
+        for idx, messages in enumerate(messages_list):
+            task = {
+                "custom_id": f"batch-{idx}",
+                "method": "POST",
+                "url": "/v1/chat/completions",
+                "body": {"model": model, "messages": messages},
+            }
+            tmp.write(json.dumps(task) + "\n")
+        tmp.flush()
+
+        batch_file = OPENAI_CLIENT.files.create(
+            file=open(tmp.name, "rb"), purpose="batch"
+        )
+
+    batch_job = OPENAI_CLIENT.batches.create(
+        input_file_id=batch_file.id,
+        endpoint="/v1/chat/completions",
+        completion_window=completion_window,
+    )
+    return batch_job.id
+
+
+def get_openai_batch_result(
+    job_id: str, poll_interval: int = 30
+) -> Union[List[Dict], List[Dict]]:
+    """
+    Poll a batch job until completion, then download and parse its results.
+    Args:
+        job_id: The batch job ID returned by call_openai_batch.
+        poll_interval: Seconds between status checks.
+    Returns:
+        A list of response objects, each containing 'custom_id' and 'response'.
+    """
+    global OPENAI_CLIENT
+    if OPENAI_CLIENT is None:
+        OPENAI_CLIENT = OpenAI(api_key=os.getenv("OPENAI_KEY"))
+
+    while True:
+        job = OPENAI_CLIENT.batches.retrieve(batch_id=job_id)
+        status = job.status
+        if status in ("completed", "failed"):
+            break
+        time.sleep(poll_interval)
+
+    if status != "completed":
+        raise RuntimeError(f"Batch job {job_id} ended with status {status}")
+
+    raw = OPENAI_CLIENT.files.content(job.output_file_id)
+    lines = raw.content.decode("utf-8").splitlines()
+    results = [json.loads(line) for line in lines]
+
+    raw = OPENAI_CLIENT.files.content(job.input_file_id)
+    lines = raw.content.decode("utf-8").splitlines()
+    input_file_rows = [json.loads(line) for line in lines]
+
+    return results, input_file_rows
 
 
 @memory.cache

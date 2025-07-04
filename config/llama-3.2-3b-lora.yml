@@ -3,7 +3,12 @@ base_model: meta-llama/Llama-3.2-3B
 datasets:
   - path: ./data/train_openai_response_transformed.jsonl
     type: chat_template
+
+    chat_template: tokenizer_default
     field_messages: messages
+    message_property_mappings:
+      role: role
+      content: content
 
 val_file: ./data/val_openai_response_transformed.jsonl
 val_set_size: 0.0

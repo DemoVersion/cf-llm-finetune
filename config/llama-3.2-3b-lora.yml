@@ -2,7 +2,8 @@ base_model: meta-llama/Llama-3.2-3B
 
 datasets:
   - path: ./data/train_openai_response_transformed.jsonl
-    type: alpaca
+    type: chat_template
+    field_messages: messages
 
 val_file: ./data/val_openai_response_transformed.jsonl
 val_set_size: 0.0

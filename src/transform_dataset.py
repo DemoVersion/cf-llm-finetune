@@ -17,24 +17,22 @@ from src.generate import (
 )
 def transform(dataset_path: str):
     """
-    Generate responses for the specified dataset file using OpenAI API.
+    Generate responses for the specified dataset file using OpenAI API. The response format is in Chat Template format and JSON Lines format.
     """
     df = pd.read_json(dataset_path, orient="records", lines=True)
     click.echo(f"Loaded dataset with {len(df)} rows from {dataset_path}")
     transformed_arr = []
     for _, row in tqdm(df.iterrows(), total=len(df), desc=f"Processing {dataset_path}"):
         messages = generate_messages(row["source"])
-        assert len(messages) == 2, "Expected exactly 2 messages in the list"
-        assert messages[0]["role"] == "system", "First message must be system message"
-        assert messages[1]["role"] == "user", "Second message must be user message"
-        msg_instruction = messages[0]["content"]
-        msg_input = messages[1]["content"]
-        msg_output = row["response"]
+        messages.append(
+            {
+                "role": "assistant",
+                "content": row["response"],
+            }
+        )
         transformed_arr.append(
             {
-                "instruction": msg_instruction,
-                "input": msg_input,
-                "output": msg_output,
+                "messages": messages,
                 "source": row["source"],
                 "contest_id": row.get("contest_id", None),
                 "index": row.get("index", None),

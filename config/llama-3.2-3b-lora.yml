@@ -14,7 +14,7 @@ datasets:
 
 val_file: ./data/val_openai_response_transformed.jsonl
 val_set_size: 0.0
-output_dir: ./outputs/lora-out
+output_dir: ./outputs/cf-llm-finetune-llama-3.2-3b-lora
 
 adapter: lora
 lora_model_dir:

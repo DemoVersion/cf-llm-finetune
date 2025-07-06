@@ -183,7 +183,9 @@ def batch_process(all_messages, model, batch_size=5, cache_file=None, **kwargs):
 
     for i in tqdm(range(0, len(all_messages), batch_size)):
         chunk = all_messages[i : i + batch_size]
-        outputs = process_chunk(chunk, model.model, model.tokenizer, **kwargs)
+        outputs = process_chunk(
+            chunk, model.model, model.tokenizer, cache_file=cache_file, **kwargs
+        )
 
         results.append(outputs)
 

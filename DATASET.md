@@ -8,7 +8,7 @@
     - Problem statements and sample inputs
 
 ## Dataset Generation
-We first get all the C++ ICPC solutions from the `open-r1/codeforces-submissions` dataset. We do that by filtering by "programmingLanguage" field. Then we sample 100 unique solutions per problem in this dataset to make the dataset smaller and more manageable. To do this efficiently, we create chunks of 500,000 solutions and then sample 100 unique solutions per problem from each chunk. Then at the end, we merge all the chunks together and sample 100 unique solutions per problem again.
+We first get all the C++ ICPC solutions from the `open-r1/codeforces-submissions` dataset. We do that by filtering by "programmingLanguage" field. Then we sample 100 unique solutions per problem in this dataset to make the dataset smaller and more manageable. To do this efficiently, we create chunks of 500,000 solutions and then convert it to Pandas Dataframe then sample 100 unique solutions per problem from each chunk. Then at the end, we merge all the chunks together and sample 100 unique solutions per problem again.
 
 In the following cleaning step, we remove remove the solutions containing macros like `#define`, `#ifdef`, and `#ifndef` to ensure the that we don't get any macro-heavy solutions. Because the macro-heavy solutions could lead to almost like a new programming language other than C++, we want to avoid them. We believe translating such solutions would require a preprocessor to handle the macros, which is not the goal of this project.
 

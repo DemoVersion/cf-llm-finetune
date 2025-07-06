@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 import torch
 from joblib import Memory
+from peft import PeftModel
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
@@ -27,6 +28,7 @@ class ModelConfig:
         quant_type: str = "nf4",
         compile_kwargs: Optional[Dict] = None,
         cache_implementation: Optional[str] = "static",
+        lora_adapter: Optional[str] = None,
     ):
         self.enable_quantization = enable_quantization
         self.quant_type = quant_type
@@ -45,10 +47,8 @@ class ModelConfig:
         if not self.enable_quantization:
             return None
         return BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_quant_type=self.quant_type,
+            load_in_8bit=True,
+            load_in_4bit=False,
         )
 
 
@@ -76,7 +76,8 @@ class ModelWrapper:
             quantization_config=config.quant_config,
             torch_dtype=torch.float16,
         )
-
+        if config.lora_adapter:
+            self.model = PeftModel.from_pretrained(self.model, config.lora_adapter)
         if config.compile_kwargs:
             self.model.forward = torch.compile(
                 self.model.forward,

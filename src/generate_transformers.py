@@ -9,9 +9,11 @@ from src.model import ModelConfig, get_model
 @click.command()
 @click.option(
     "--dataset-name",
-    type=click.Choice(["train", "val", "test"], case_sensitive=False),
+    type=click.Choice(
+        ["train", "val", "test", "functional-test"], case_sensitive=False
+    ),
     default="val",
-    help="Which dataset split to process: train, val, or test.",
+    help="Which dataset split to process: train, val, or test or functional-test for quick validation.",
 )
 @click.option(
     "--model-id",
@@ -21,7 +23,27 @@ from src.model import ModelConfig, get_model
 @click.option(
     "--batch-size", type=int, default=1, help="Batch size for processing messages."
 )
-def generate_transformers(dataset_name, model_id, batch_size):
+@click.option(
+    "--lora-adapter",
+    type=str,
+    default=None,
+    help="Path to LoRA adapter to use with the model.",
+)
+@click.option(
+    "--enable-quantization",
+    is_flag=True,
+    default=True,
+    help="Enable quantization for the model.",
+)
+@click.option(
+    "--output-path",
+    type=click.Path(exists=False, writable=True, dir_okay=False),
+    default="{dataset_name}_transformers_response.jsonl",
+    help="Path to save the generated responses in JSONL format.",
+)
+def generate_transformers(
+    dataset_name, model_id, batch_size, lora_adapter, enable_quantization, output_path
+):
     """
     Generate code responses using a Transformers model and save as JSONL.
     """
@@ -31,11 +53,20 @@ def generate_transformers(dataset_name, model_id, batch_size):
         "val": val_df,
         "test": test_df,
     }
-
-    df = datasets[dataset_name]
+    if dataset_name == "functional-test":
+        click.echo(
+            "Using only the first 10 rows of the validation set for functional testing."
+        )
+        df = val_df.head(10)
+    else:
+        df = datasets[dataset_name]
 
     messages = generate_messages_dataset(df)
-    config = ModelConfig(compile_kwargs={"fullgraph": True})
+    config = ModelConfig(
+        enable_quantization=enable_quantization,
+        lora_adapter=lora_adapter,
+        compile_kwargs={"fullgraph": True},
+    )
     model = get_model(model_id=model_id, config=config)
 
     results = batch_process(messages, model, batch_size=batch_size)
@@ -52,9 +83,14 @@ def generate_transformers(dataset_name, model_id, batch_size):
         )
 
     result_df = pd.DataFrame(responses)
-    output_file = f"{dataset_name}_transformers_response.jsonl"
-    result_df.to_json(output_file, orient="records", lines=True, force_ascii=False)
-    click.echo(f"Wrote {len(result_df)} responses to {output_file}")
+    if "{{dataset_name}}" in output_path:
+        output_path_formatted = output_path.format(dataset_name=dataset_name)
+    else:
+        output_path_formatted = output_path
+    result_df.to_json(
+        output_path_formatted, orient="records", lines=True, force_ascii=False
+    )
+    click.echo(f"Wrote {len(result_df)} responses to {output_path_formatted}")
 
 
 if __name__ == "__main__":

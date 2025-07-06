@@ -30,10 +30,7 @@ class ModelConfig:
         lora_adapter: Optional[str] = None,
     ):
         self.enable_quantization = enable_quantization
-        self.compile_kwargs = compile_kwargs or {
-            "fullgraph": False,
-        }
-
+        self.compile_kwargs = compile_kwargs
         self.cache_implementation = cache_implementation
         self.lora_adapter = lora_adapter
 

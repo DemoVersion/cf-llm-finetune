@@ -4,6 +4,30 @@ import pandas as pd
 from src.batch_generation import batch_process, generate_messages_dataset
 from src.dataset import load_dataset_split
 from src.model import ModelConfig, get_model
+from src.utils import get_dict_key
+
+
+def generate_cache_key(
+    dataset_name,
+    model_id,
+    batch_size,
+    lora_adapter,
+    enable_quantization,
+    output_path,
+    use_cache,
+):
+    # Create a dictionary of the parameters
+    params = {
+        "dataset_name": dataset_name,
+        "model_id": model_id,
+        "batch_size": batch_size,
+        "lora_adapter": lora_adapter,
+        "enable_quantization": enable_quantization,
+        "output_path": output_path,
+        "use_cache": use_cache,
+    }
+    cache_key = get_dict_key(params)
+    return cache_key
 
 
 @click.command()
@@ -45,7 +69,7 @@ from src.model import ModelConfig, get_model
     "--use-cache",
     is_flag=True,
     default=False,
-    help="Use caching to skip previously processed messages. Can cause problems if the underlying model changes.",
+    help="Use caching to skip previously processed messages. Useful for large datasets that run may terminate before completion.",
 )
 def generate_transformers(
     dataset_name,
@@ -67,12 +91,29 @@ def generate_transformers(
     }
     if dataset_name == "functional-test":
         click.echo(
-            "Using only the first 10 rows of the validation set for functional testing."
+            "Using only the first 2 rows of the validation set for functional testing."
         )
-        df = val_df.head(10)
+        df = val_df.head(2)
     else:
         df = datasets[dataset_name]
 
+    click.echo(f"Loaded {len(df)} rows from the {dataset_name} dataset.")
+    if use_cache:
+        click.echo("Using cache to skip previously processed messages.")
+        cache_key = generate_cache_key(
+            dataset_name,
+            model_id,
+            batch_size,
+            lora_adapter,
+            enable_quantization,
+            output_path,
+            use_cache,
+        )
+        click.echo(f"Cache key: {cache_key}")
+        cache_file = f"cache_{cache_key}.pkl"
+    else:
+        click.echo("Not using cache, all messages will be processed.")
+        cache_file = None
     messages = generate_messages_dataset(df)
     config = ModelConfig(
         enable_quantization=enable_quantization,
@@ -81,7 +122,13 @@ def generate_transformers(
     )
     model = get_model(model_id=model_id, config=config)
 
-    results = batch_process(messages, model, batch_size=batch_size, use_cache=use_cache)
+    results = batch_process(
+        messages,
+        model,
+        batch_size=batch_size,
+        use_cache=use_cache,
+        cache_file=cache_file,
+    )
 
     responses = []
     for row, resp in zip(df.itertuples(index=False), results):

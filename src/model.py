@@ -73,6 +73,9 @@ class ModelWrapper:
         )
         if config.lora_adapter:
             self.model = PeftModel.from_pretrained(self.model, config.lora_adapter)
+            logger.info(
+                f"Loaded PEFT model from '{config.lora_adapter}' for '{model_id}'."
+            )
         if config.compile_kwargs:
             self.model.forward = torch.compile(
                 self.model.forward,

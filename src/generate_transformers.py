@@ -87,6 +87,9 @@ def generate_transformers(
         output_path_formatted = output_path.format(dataset_name=dataset_name)
     else:
         output_path_formatted = output_path
+    click.echo(
+        f"Saving responses to {output_path_formatted} with {len(result_df)} rows."
+    )
     result_df.to_json(
         output_path_formatted, orient="records", lines=True, force_ascii=False
     )

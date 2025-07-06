@@ -65,7 +65,7 @@ def generate_transformers(
     config = ModelConfig(
         enable_quantization=enable_quantization,
         lora_adapter=lora_adapter,
-        compile_kwargs={"fullgraph": True},
+        # compile_kwargs={"fullgraph": True},
     )
     model = get_model(model_id=model_id, config=config)
 

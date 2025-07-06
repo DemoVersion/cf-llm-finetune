@@ -10,9 +10,9 @@
 ## Dataset Generation
 We first get all the C++ ICPC solutions from the `open-r1/codeforces-submissions` dataset. We do that by filtering by "programmingLanguage" field. Then we sample 100 unique solutions per problem in this dataset to make the dataset smaller and more manageable. To do this efficiently, we create chunks of 500,000 solutions and then convert it to Pandas Dataframe then sample 100 unique solutions per problem from each chunk. Then at the end, we merge all the chunks together and sample 100 unique solutions per problem again.
 
-In the following cleaning step, we remove remove the solutions containing macros like `#define`, `#ifdef`, and `#ifndef` to ensure the that we don't get any macro-heavy solutions. Because the macro-heavy solutions could lead to almost like a new programming language other than C++, we want to avoid them. We believe translating such solutions would require a preprocessor to handle the macros, which is not the goal of this project.
+In the following cleaning step, we remove the solutions containing macros like `#define`, `#ifdef`, and `#ifndef` to ensure the that we don't get any macro-heavy solutions. Because the macro-heavy solutions could lead to almost like a new programming language other than C++, we want to avoid them. We believe translating such solutions would require a preprocessor to handle the macros, which is not the goal of this project.
 
-Then we merge this dataset with the `open-r1/codeforces` dataset to get the problem statements and sample inputs, and keep only the one unique solution per problem. This ensures that we have only one solution per problem, and not a single problem with multiple solutions is leaked between the training and test datasets.
+Then we merge this dataset with the `open-r1/codeforces` dataset to get the problem statements and sample inputs, and keep only the one unique solution per problem. This ensures that we have only one solution per problem, and not a single problem with multiple solutions is leaked between the training and test datasets. We also remove the problems that have a code checker in order to simplify the dataset and avoid any complications that might arise from code checkers.
 
 This also balances the dataset, because most of the solutions are for the easier problems and we want to see how well the model can perform in all ranges of problems which is achievable by unique solutions per problem.
 
@@ -28,7 +28,7 @@ Here we use a simple test harness that compiles and runs the Python output again
 ## Solution Generation for Synthetic Dataset
 We use OpenAI's GPT-4.1 to generate Python translations for the C++ solutions in the dataset. The goal is to create a synthetic parallel dataset that can be used for fine-tuning the model. The generated Python translations are then paired with the original C++ code to form a fine-tuning corpus. The code for the solution generation could be found in the `src/generate_openai.py` file.
 
-This file provides both direct OpenAI API calls and a batch job submission mode for generating the solutions. The batch job submission mode is useful for generating large datasets for saving costs and avoiding rate limits. The generated solutions are saved in a JSONL file format, which is then used for fine-tuning the model.
+This file provides both direct OpenAI API calls and a batch job submission mode for generating the solutions. The batch job submission mode is useful for generating large datasets while saving costs and avoiding rate limits. The generated solutions are saved in a JSONL file format, which is then used for fine-tuning the model.
 
 Before running the solution generation, make sure to set the `OPENAI_API_KEY` environment variable with your OpenAI API key. You can do this by creating a `.env` file in the root directory of the project and adding the following line:
 ```
@@ -43,3 +43,9 @@ You need to repeat this for the validation and test datasets by changing the `--
 You can also use `functional-test` it consists of 10 unique problems from validation dataset to just be sure that the script is working correctly without generating a large dataset.
 
 Note that first time you run the script, it will take a while to generate dataset because it will create the dataset from scratch. But then it will get cached and subsequent runs will be much faster.
+
+After generating the dataset, we can transform the dataset to a format that is suitable for fine-tuning the model. This is done by running the following command:
+```bash
+uv run python -m src.transform_dataset --dataset-path train_openai_response.jsonl
+```
+This will create a new file called `train_openai_response_transformed.jsonl` which uses the chat template format supported by the `axolotl` library.

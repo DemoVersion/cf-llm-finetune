@@ -10,16 +10,9 @@ Synthetic Python translations are produced via GPT-4.1, then used to fine-tune a
 
 ## Dataset
 
-1. **Source C++ solutions**  
-   - Codeforces submissions labeled “ICPC” difficulty  
-   - Pulled via the `open-r1/codeforces-submissions` dataset
+This project uses a synthetic parallel dataset built from the [Codeforces submissions](https://huggingface.co/datasets/open-r1/-submissions) and [problems](https://huggingface.co/datasets/open-r1/codeforces). C++ ICPC-style solutions are filtered, cleaned, and paired with problem statements to generate Python translations using GPT-4.1, creating a fine-tuning dataset for code translation.
 
-2. **Problem statements & samples**  
-   - Retrieved from `open-r1/codeforces`
-
-3. **Synthetic translations**  
-   - Generated with GPT-4.1  
-   - Paired with original C++ code to form a fine-tuning corpus
+The final dataset consists of C++ solutions from 2,000 unique problems, and synthetic Python answers, split into train (1,400), validation (300), and test (300) sets. For details on dataset generation, cleaning, evaluation, and translation process, see [DATASET.md](./DATASET.md).
 
 ## Model Fine-Tuning
 

@@ -1,6 +1,4 @@
 base_model: meta-llama/Llama-3.2-3B-Instruct
-model_type: LlamaForCausalLM
-tokenizer_type: AutoTokenizer
 datasets:
   - path: ./data/train_openai_response_transformed.jsonl
     type: chat_template

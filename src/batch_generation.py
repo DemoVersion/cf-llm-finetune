@@ -147,7 +147,7 @@ def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6)
     results = []
     for msg in chunk:
         key = repr(msg)
-        results.append(cache[key])
+        results.append(cache[key][0])  # Get only the output text
 
     return results
 

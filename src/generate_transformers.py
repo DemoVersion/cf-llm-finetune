@@ -76,7 +76,7 @@ def generate_transformers(
         responses.append(
             {
                 "source": getattr(row, "source", None),
-                "response": resp[0],
+                "response": resp,
                 "contest_id": getattr(row, "contest_id", None),
                 "index": getattr(row, "index", None),
             }

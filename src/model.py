@@ -25,19 +25,17 @@ class ModelConfig:
     def __init__(
         self,
         enable_quantization: bool = False,
-        quant_type: str = "nf4",
         compile_kwargs: Optional[Dict] = None,
         cache_implementation: Optional[str] = "static",
         lora_adapter: Optional[str] = None,
     ):
         self.enable_quantization = enable_quantization
-        self.quant_type = quant_type
-
         self.compile_kwargs = compile_kwargs or {
             "fullgraph": False,
         }
 
         self.cache_implementation = cache_implementation
+        self.lora_adapter = lora_adapter
 
     @property
     def quant_config(self) -> Optional[BitsAndBytesConfig]:

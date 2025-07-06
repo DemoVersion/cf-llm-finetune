@@ -73,6 +73,8 @@ def generate_transformers(
 
     responses = []
     for row, resp in zip(df.itertuples(index=False), results):
+        print(f"Processing row: {row}")
+        print(f"Generated response: {resp}")
         responses.append(
             {
                 "source": getattr(row, "source", None),

@@ -83,7 +83,9 @@ def save_cache():
         pickle.dump(cache, f)
 
 
-def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6):
+def process_chunk(
+    chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6, use_cache=False
+):
     """
     Process a list of messages (chunk). Uses per-message caching:
     - Checks each message against the cache.
@@ -107,7 +109,7 @@ def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6)
     uncached = []
     for msg in chunk:
         key = repr(msg)
-        if key not in cache:
+        if key not in cache or not use_cache:
             uncached.append(msg)
 
     # Process uncached messages in one batch call

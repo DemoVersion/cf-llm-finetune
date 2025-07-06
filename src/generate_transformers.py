@@ -41,8 +41,20 @@ from src.model import ModelConfig, get_model
     default="{dataset_name}_transformers_response.jsonl",
     help="Path to save the generated responses in JSONL format.",
 )
+@click.option(
+    "--use-cache",
+    is_flag=True,
+    default=False,
+    help="Use caching to skip previously processed messages. Can cause problems if the underlying model changes.",
+)
 def generate_transformers(
-    dataset_name, model_id, batch_size, lora_adapter, enable_quantization, output_path
+    dataset_name,
+    model_id,
+    batch_size,
+    lora_adapter,
+    enable_quantization,
+    output_path,
+    use_cache,
 ):
     """
     Generate code responses using a Transformers model and save as JSONL.
@@ -69,7 +81,7 @@ def generate_transformers(
     )
     model = get_model(model_id=model_id, config=config)
 
-    results = batch_process(messages, model, batch_size=batch_size)
+    results = batch_process(messages, model, batch_size=batch_size, use_cache=use_cache)
 
     responses = []
     for row, resp in zip(df.itertuples(index=False), results):

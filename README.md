@@ -14,12 +14,30 @@ This project uses a synthetic parallel dataset built from the [Codeforces submis
 
 The final dataset consists of C++ solutions from 2,000 unique problems, and synthetic Python answers, split into train (1,400), validation (300), and test (300) sets. For details on dataset generation, cleaning, evaluation, and translation process, see [DATASET.md](./DATASET.md).
 
+Before running the dataset generation, ensure that you have completed the installation steps outlined below.
+
 ## Model Fine-Tuning
 
-- **Base model:** LLaMA 3.2 3B  
+- **Base model:** LLaMA 3.2 3B Instruct
 - **Framework:** `axolotl`, `transformers`, `deepspeed`, `flash-attn`  
-- **Objective:** Minimize translation errors, and reduce costs on sample tests based on Teacher Student Learning (TSL) principle 
-- **Verification:** Automated test harness that compiles/runs the Python output against provided samples
+
+This project fine-tunes the `meta-llama/Llama-3.2-3B-Instruct` model using the `Axolotl` library and a synthetic C++ to Python dataset. Training uses a LoRA configuration defined in `config/llama-3.2-3b-lora.yml`.
+
+Before training, ensure:
+- You've completed the installation steps outlined below.
+- You've generated the dataset (see [DATASET.md](./DATASET.md)).
+- You've been granted access to the base model on Hugging Face.
+- You’ve logged in via huggingface-cli login.
+
+You can inspect the tokenized dataset with:
+```bash
+uv run axolotl preprocess config/llama-3.2-3b-lora.yml
+```
+To start training:
+```bash
+uv run axolotl train config/llama-3.2-3b-lora.yml
+```
+More details, including tokenizer inspection and prompt formatting, can be found in [TRAIN.md](./TRAIN.md).
 
 ## Installation
 

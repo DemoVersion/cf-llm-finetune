@@ -39,6 +39,21 @@ uv run axolotl train config/llama-3.2-3b-lora.yml
 ```
 More details, including tokenizer inspection and prompt formatting, can be found in [TRAIN.md](./TRAIN.md).
 
+## Inference and Evaluation
+After instalation and training, or by using the pre-trained model, you can run inference on the fine-tuned model using the following command:
+```bash
+uv run python -m src.generate_transformers --dataset-name test --lora-adapter ./outputs/cf-llm-finetune-llama-3.2-3b-lora --output-path test_finetunned_transformers_response.jsonl --use-cache
+```
+For inference of the base model, you can use:
+```bash
+uv run python -m src.generate_transformers --dataset-name test --output-path test_transformers_response.jsonl --use-cache
+```
+
+After that for evaluation, you can run the following command:
+```bash
+uv run python -m src.evaluate_response --response-file test_finetunned_transformers_response.jsonl
+```
+
 ## Installation
 
 1. Install `uv` (if not already installed):  

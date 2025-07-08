@@ -131,7 +131,7 @@ def generate_transformers(
     )
 
     responses = []
-    for row, resp in zip(df.itertuples(index=False), results):
+    for (_, row), resp in zip(df.iterrows(), results):
         responses.append(
             {
                 "source": row.source,

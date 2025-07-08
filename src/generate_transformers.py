@@ -134,10 +134,10 @@ def generate_transformers(
     for (_, row), resp in zip(df.iterrows(), results):
         responses.append(
             {
-                "source": row.source,
+                "source": row["source"],
                 "response": resp,
-                "contest_id": row.contest_id,
-                "index": row.index,
+                "contest_id": row["contest_id"],
+                "index": row["index"],
             }
         )
 

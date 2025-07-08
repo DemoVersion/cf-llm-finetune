@@ -187,7 +187,7 @@ def batch_process(all_messages, model, batch_size=5, cache_file=None, **kwargs):
             chunk, model.model, model.tokenizer, cache_file=cache_file, **kwargs
         )
 
-        results.append(outputs)
+        results.extend(outputs)
 
     return results
 

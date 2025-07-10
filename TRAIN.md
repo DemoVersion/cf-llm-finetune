@@ -5,6 +5,10 @@ This project uses the `axolotl` library to fine-tune a smaller LLaMA 3.2 3B mode
 The configuration file for the fine-tuning is located in `config/llama-3.2-3b-lora.yml`.
 Before starting the fine-tuning process, make sure to have the dataset generated and transformed as described in [DATASET.md](./DATASET.md).
 
+### Fine-tuned model on Hugging Face
+You can find the fine-tuned model on Hugging Face at [demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation](https://huggingface.co/demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation).
+
+
 ## Getting access to the base model
 To access the base model, you need to log in to the Hugging Face Hub. You can do this by running the following command:
 ```bash

@@ -9,7 +9,6 @@ from tqdm import tqdm
 from src.generate import generate_messages
 
 cache = {}
-CACHE_FILE = "conversation_cache.pkl"
 
 
 def generate_from_token_ids(
@@ -65,25 +64,37 @@ def process_all_conversations(
     )
 
 
-def load_cache():
+def load_cache(cache_file):
     """
     Load the cache dictionary from disk into the global `cache` variable.
     """
     global cache
-    if len(cache) == 0 and os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "rb") as f:
+    if cache_file is None:
+        return
+    if len(cache) == 0 and os.path.exists(cache_file):
+        with open(cache_file, "rb") as f:
             cache = pickle.load(f)
 
 
-def save_cache():
+def save_cache(cache_file):
     """
     Persist the global `cache` dictionary to disk.
     """
-    with open(CACHE_FILE, "wb") as f:
+    if cache_file is None:
+        return
+    with open(cache_file, "wb") as f:
         pickle.dump(cache, f)
 
 
-def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6):
+def process_chunk(
+    chunk,
+    model,
+    tokenizer,
+    max_new_tokens=4096,
+    temperature=0.6,
+    use_cache=False,
+    cache_file=None,
+):
     """
     Process a list of messages (chunk). Uses per-message caching:
     - Checks each message against the cache.
@@ -101,13 +112,13 @@ def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6)
     Returns:
         list: List of tuples for each message in chunk.
     """
-    load_cache()
+    load_cache(cache_file)
 
     # Identify which messages need processing
     uncached = []
     for msg in chunk:
         key = repr(msg)
-        if key not in cache:
+        if key not in cache or not use_cache:
             uncached.append(msg)
 
     # Process uncached messages in one batch call
@@ -137,7 +148,7 @@ def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6)
                     else generated_ids_new
                 ),
             )
-        save_cache()
+        save_cache(cache_file)
     else:
         print(
             f"[{datetime.now()}] All messages in chunk are cached. Skipping processing."
@@ -147,12 +158,12 @@ def process_chunk(chunk, model, tokenizer, max_new_tokens=4096, temperature=0.6)
     results = []
     for msg in chunk:
         key = repr(msg)
-        results.append(cache[key])
+        results.append(cache[key][0])  # Get only the output text
 
     return results
 
 
-def batch_process(all_messages, model, batch_size=5, **kwargs):
+def batch_process(all_messages, model, batch_size=5, cache_file=None, **kwargs):
     """
     Iterate through all_messages in batches of `batch_size`, using caching to skip
     previously processed chunks.
@@ -167,14 +178,16 @@ def batch_process(all_messages, model, batch_size=5, **kwargs):
     Returns:
         list: A list of results for each processed chunk.
     """
-    load_cache()
+    load_cache(cache_file)
     results = []
 
     for i in tqdm(range(0, len(all_messages), batch_size)):
         chunk = all_messages[i : i + batch_size]
-        outputs = process_chunk(chunk, model.model, model.tokenizer, **kwargs)
+        outputs = process_chunk(
+            chunk, model.model, model.tokenizer, cache_file=cache_file, **kwargs
+        )
 
-        results.append(outputs)
+        results.extend(outputs)
 
     return results
 

@@ -7,6 +7,11 @@
 - `open-r1/codeforces`
     - Problem statements and sample inputs
 
+### Generated Dataset on Hugging Face
+The generated dataset is available on Hugging Face at [demoversion/cf-cpp-to-python-code-generation](https://huggingface.co/datasets/demoversion/cf-cpp-to-python-code-generation).
+
+If you do not want to modify the dataset generation process, you can use this dataset directly for fine-tuning.
+
 ## Dataset Generation
 We first get all the C++ ICPC solutions from the `open-r1/codeforces-submissions` dataset. We do that by filtering by "programmingLanguage" field. Then we sample 100 unique solutions per problem in this dataset to make the dataset smaller and more manageable. To do this efficiently, we create chunks of 500,000 solutions and then convert it to Pandas Dataframe then sample 100 unique solutions per problem from each chunk. Then at the end, we merge all the chunks together and sample 100 unique solutions per problem again.
 

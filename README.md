@@ -8,6 +8,10 @@
 
 Synthetic Python translations are produced via GPT-4.1, then used to fine-tune a smaller LLaMA 3.2 3B model. Our goal is to explore how effectively lightweight models can be trained for this focused code‐translation task.
 
+### Generated Dataset and Fine-Tuned Model on Hugging Face
+The generated dataset is available on Hugging Face at [demoversion/cf-cpp-to-python-code-generation](https://huggingface.co/datasets/demoversion/cf-cpp-to-python-code-generation).  
+The fine-tuned model can be found at [demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation](https://huggingface.co/demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation). If you do not want to modify the dataset generation process, you can use this dataset directly for fine-tuning. Or if you only want to do inference, you can use the pre-trained model directly without fine-tuning.
+
 ## Dataset
 
 This project uses a synthetic parallel dataset built from the [Codeforces submissions](https://huggingface.co/datasets/open-r1/-submissions) and [problems](https://huggingface.co/datasets/open-r1/codeforces). C++ ICPC-style solutions are filtered, cleaned, and paired with problem statements to generate Python translations using GPT-4.1, creating a fine-tuning dataset for code translation.
@@ -38,6 +42,27 @@ To start training:
 uv run axolotl train config/llama-3.2-3b-lora.yml
 ```
 More details, including tokenizer inspection and prompt formatting, can be found in [TRAIN.md](./TRAIN.md).
+
+## Inference and Evaluation
+After instalation and training, or by using the pre-trained model, you can run inference on the fine-tuned model using the following command:
+```bash
+uv run python -m src.generate_transformers --dataset-name test --lora-adapter demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation --output-path test_finetunned_transformers_response.jsonl --use-cache
+```
+For inference of the base model, you can use:
+```bash
+uv run python -m src.generate_transformers --dataset-name test --output-path test_transformers_response.jsonl --use-cache
+```
+
+After that for evaluation, you can run the following command:
+```bash
+uv run python -m src.evaluate_response --response-file test_finetunned_transformers_response.jsonl
+```
+
+If you have fine-tuned the model locally, for generation you can use the relative path to the LoRA adapter:
+```bash
+uv run python -m src.generate_transformers --dataset-name test --lora-adapter ./outputs/cf-llm-finetune-llama-3.2-3b-lora --output-path test_finetunned_transformers_response.jsonl --use-cache
+```
+
 
 ## Installation
 

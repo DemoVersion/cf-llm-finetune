@@ -7,8 +7,10 @@
 - `"open-r1/codeforces"`
 
 Synthetic Python translations are produced via GPT-4.1, then used to fine-tune a smaller LLaMA 3.2 3B model. Our goal is to explore how effectively lightweight models can be trained for this focused code‐translation task.
-*Main medium article*: [Toward fine-tuning Llama 3.2 using PEFT for Code Generation](https://medium.com/@haddadhesam/towards-fine-tuning-llama-3-2-using-peft-for-code-generation-63e3991c26db)
-*Medium article for inference with GGUF format*: [How to inference with GGUF format](https://haddadhesam.medium.com/one-file-to-rule-them-all-gguf-for-local-llm-testing-and-deployment-208b85934434)
+
+**Main medium article**: [Toward fine-tuning Llama 3.2 using PEFT for Code Generation](https://medium.com/@haddadhesam/towards-fine-tuning-llama-3-2-using-peft-for-code-generation-63e3991c26db)
+
+**Medium article for inference with GGUF format**: [How to inference with GGUF format](https://haddadhesam.medium.com/one-file-to-rule-them-all-gguf-for-local-llm-testing-and-deployment-208b85934434)
 
 ### Generated Dataset and Fine-Tuned Model on Hugging Face
 The generated dataset is available on Hugging Face at [demoversion/cf-cpp-to-python-code-generation](https://huggingface.co/datasets/demoversion/cf-cpp-to-python-code-generation).  

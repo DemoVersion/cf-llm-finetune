@@ -24,7 +24,7 @@ This also balances the dataset, because most of the solutions are for the easier
 Finally, we sample 2000 unique problems from this dataset to create the final dataset. This is done to ensure that we have a manageable dataset size for training and testing. Then we seperate the solutions into train, validation, and test datasets. The train dataset contains 1400 unique problems, the validation dataset contains 300 unique problems, and the test dataset contains 300 unique problems. The code for the dataset generation could be found in the `src/dataset.py` file.
 
 ## Evaluation
-Evaluation is done by running the generated Python solutions against the sample inputs provided in the problem statements. Although it is not a good way to test and any bruteforce solution will pass the tests, it is a the common way to evaluate the solutions in competitive programming as noted here by [DeepSeek](https://huggingface.co/datasets/open-r1/codeforces) team as well.
+Evaluation is done by running the generated Python solutions against the sample inputs provided in the problem statements. Although it is not a good way to test and any bruteforce solution will pass the tests, it is the common way to evaluate the LLM solutions in competitive programming as noted here by [DeepSeek](https://huggingface.co/datasets/open-r1/codeforces) team as well.
 
 The evaluation is done by compiling and running the generated Python solutions against the sample inputs provided in the problem statements. The evaluation is done using a test harness that compiles and runs the Python output against provided samples. The code for the evaluation could be found in the `src/evaluate_response.py` file. 
 

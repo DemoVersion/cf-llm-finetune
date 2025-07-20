@@ -7,6 +7,8 @@
 - `"open-r1/codeforces"`
 
 Synthetic Python translations are produced via GPT-4.1, then used to fine-tune a smaller LLaMA 3.2 3B model. Our goal is to explore how effectively lightweight models can be trained for this focused code‐translation task.
+*Main medium article*: [Toward fine-tuning Llama 3.2 using PEFT for Code Generation](https://medium.com/@haddadhesam/towards-fine-tuning-llama-3-2-using-peft-for-code-generation-63e3991c26db)
+*Medium article for inference with GGUF format*: [How to inference with GGUF format](https://haddadhesam.medium.com/one-file-to-rule-them-all-gguf-for-local-llm-testing-and-deployment-208b85934434)
 
 ### Generated Dataset and Fine-Tuned Model on Hugging Face
 The generated dataset is available on Hugging Face at [demoversion/cf-cpp-to-python-code-generation](https://huggingface.co/datasets/demoversion/cf-cpp-to-python-code-generation).  
@@ -63,6 +65,14 @@ If you have fine-tuned the model locally, for generation you can use the relativ
 uv run python -m src.generate_transformers --dataset-name test --lora-adapter ./outputs/cf-llm-finetune-llama-3.2-3b-lora --output-path test_finetunned_transformers_response.jsonl --use-cache
 ```
 
+## Inference with GGUF Format (Llama.cpp, GPT4All, etc.)
+To run inference with the fine-tuned model using Llama.cpp, you can use the converted model in GGUF format. first download the model from Hugging Face:
+```bash
+huggingface-cli download demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation --include "Llama-3.2-3B-Instruct-PEFT-code-generation.Q8_0.gguf" --local-dir ./
+```
+You can also directly download the model from the Hugging Face Hub website from the [model page](https://huggingface.co/demoversion/Llama-3.2-3B-Instruct-PEFT-code-generation).
+
+Then you can use the `llama-cli`, GPT4All, or any other compatible framework to run inference with the GGUF model. For more information on how to run inference with GGUF models, you can check their documentation. [Llama.cpp documentation](https://github.com/ggml-org/llama.cpp)
 
 ## Installation
 
